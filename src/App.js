@@ -1,5 +1,8 @@
 // import Counter from "./components/counter/counter";
 // import Game from "./components/game/game";
+import Footer from "./components/footer/footer";
+import Header from "./components/header/header";
+import TodoList from "./components/todos/todoList";
 
 const App = () => {
   return (
@@ -12,9 +15,16 @@ const App = () => {
           </div>
         </section>
       </nav>
-      <section>
-        <h2>Welcome to the Redux Fundamentals example app!</h2>
-      </section>
+      <main>
+        <section className="medium-container">
+          <h2>Todos</h2>
+          <div className="todoapp">
+            <Header />
+            <TodoList />
+            <Footer />
+          </div>
+        </section>
+      </main>
     </div>
   );
 };
