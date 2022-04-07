@@ -56,6 +56,6 @@ export const colorFilterChanged = (color, changeType) => {
 export const statusFilterChanged = (status) => {
   return {
     type: "filters/statusFilterChanged",
-    payload: { status },
+    payload: status,
   };
 };
