@@ -54,16 +54,45 @@ const todosReducer = (state = initialState, action) => {
   }
 };
 
-export const fetchTodos = async (dispatch, getState) => {
-  const response = await client.get("/fakeApi/todos");
-  dispatch({ type: "todos/todosLoaded", payload: response.todos });
+export const completedCleared = () => ({ type: "todos/completedCleared" });
+
+export const allCompleted = () => ({ type: "todos/allCompleted" });
+
+export const colorSelected = (todoId, color) => ({
+  type: "todos/colorSelected",
+  payload: { todoId, color },
+});
+
+export const todoToggled = (todoId) => ({ type: "todos/todoToggled", payload: todoId });
+
+export const todoDeleted = (todoId) => ({ type: "todos/todoDeleted", payload: todoId });
+
+export const todosLoaded = (todos) => {
+  return {
+    type: "todos/todosLoaded",
+    payload: todos,
+  };
 };
+
+export const todoAdded = (todo) => {
+  return {
+    type: "todos/todoAdded",
+    payload: todo,
+  };
+};
+
+export function fetchTodos() {
+  return async (dispatch, getState) => {
+    const response = await client.get("/fakeApi/todos");
+    dispatch(todosLoaded(response.todos));
+  };
+}
 
 export const saveNewTodo = (text) => {
   return async (dispatch, getState) => {
     const todo = { text };
     const response = await client.post("/fakeApi/todos", { todo });
-    dispatch({ type: "todos/todoAdded", payload: response.todo });
+    dispatch(todoAdded(response.todo));
   };
 };
 

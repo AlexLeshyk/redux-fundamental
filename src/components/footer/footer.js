@@ -2,6 +2,8 @@ import { useSelector, useDispatch } from "react-redux";
 import ColorFilters from "./colorFilters";
 import RemainingTodos from "./remainingTodos";
 import StatusFilter from "./statusFilter";
+import { colorFilterChanged, statusFilterChanged } from "../filters/filtersSlice";
+import { completedCleared, allCompleted } from "../todos/todosSlice";
 
 const Footer = () => {
   const { colors, status } = useSelector((state) => state.filters);
@@ -12,18 +14,18 @@ const Footer = () => {
   const dispatch = useDispatch();
 
   const onColorChange = (color, changeType) => {
-    dispatch({ type: "filters/colorFilterChanged", payload: { changeType, color } });
+    dispatch(colorFilterChanged(color, changeType));
   };
   const onStatusChange = (status) => {
-    dispatch({ type: "filters/statusFilterChanged", payload: status });
+    dispatch(statusFilterChanged(status));
   };
 
   const handleAllCompleted = () => {
-    dispatch({ type: "todos/allCompleted" });
+    dispatch(allCompleted());
   };
 
   const handleClearCompleted = () => {
-    dispatch({ type: "todos/completedCleared" });
+    dispatch(completedCleared());
   };
 
   return (

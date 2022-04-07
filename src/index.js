@@ -7,7 +7,7 @@ import store from "./store";
 import "./api/server";
 import { fetchTodos } from "./components/todos/todosSlice";
 
-store.dispatch(fetchTodos);
+store.dispatch(fetchTodos());
 
 // store.dispatch({ type: "todos/todoAdded", payload: "Learn about actions" });
 
