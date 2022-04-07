@@ -1,3 +1,5 @@
+import { createSelector } from "reselect";
+import { StatusFilters } from "../filters/filtersSlice";
 import { client } from "../../api/client";
 
 const initialState = [];
@@ -6,6 +8,44 @@ const initialState = [];
 //   const maxId = todos.reduce((maxId, todo) => Math.max(todo.id, maxId), -1);
 //   return maxId + 1;
 // }
+export const selectTodos = (state) => state.todos;
+
+export const selectFilteredTodos = createSelector(
+  // First input selector: all todos
+  selectTodos,
+  // Second input selector: all filter values
+  (state) => state.filters,
+  // Output selector: receives both values
+  (todos, filters) => {
+    const { status, colors } = filters;
+    const showAllCompletions = status === StatusFilters.All;
+    if (showAllCompletions && colors.length === 0) {
+      return todos;
+    }
+
+    const completedStatus = status === StatusFilters.Completed;
+    // Return either active or completed todos based on filter
+    return todos.filter((todo) => {
+      const statusMatches = showAllCompletions || todo.completed === completedStatus;
+      const colorMatches = colors.length === 0 || colors.includes(todo.color);
+      console.log(statusMatches, colorMatches);
+      return statusMatches && colorMatches;
+    });
+  }
+);
+
+export const selectTodoById = (state, todoId) => {
+  return selectTodos(state).find((todo) => todo.id === todoId);
+};
+
+export const selectTodoIds = createSelector(
+  (state) => state.todos,
+  (todos) => todos.map((todo) => todo.id)
+);
+
+export const selectFilteredTodoIds = createSelector(selectFilteredTodos, (filteredTodos) =>
+  filteredTodos.map((todo) => todo.id)
+);
 
 const todosReducer = (state = initialState, action) => {
   switch (action.type) {
