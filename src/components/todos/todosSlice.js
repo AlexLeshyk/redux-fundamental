@@ -4,14 +4,15 @@ import { client } from "../../api/client";
 
 const initialState = {
   status: "idle",
-  todos: [],
+  todos: {},
 };
 
 // function nextTodoId(todos) {
 //   const maxId = todos.reduce((maxId, todo) => Math.max(todo.id, maxId), -1);
 //   return maxId + 1;
 // }
-export const selectTodos = (state) => state.todos.todos;
+const selectTodoEntities = (state) => state.todos.todos;
+export const selectTodos = createSelector(selectTodoEntities, (todos) => Object.values(todos));
 
 export const selectFilteredTodos = createSelector(
   // First input selector: all todos
@@ -38,7 +39,7 @@ export const selectFilteredTodos = createSelector(
 );
 
 export const selectTodoById = (state, todoId) => {
-  return selectTodos(state).find((todo) => todo.id === todoId);
+  return selectTodoEntities(state)[todoId];
 };
 
 export const selectTodoIds = createSelector(
@@ -53,63 +54,85 @@ export const selectFilteredTodoIds = createSelector(selectFilteredTodos, (filter
 const todosReducer = (state = initialState, action) => {
   switch (action.type) {
     case "todos/todoAdded": {
+      const todo = action.payload;
       return {
         ...state,
-        todos: [...state.todos, action.payload],
+        todos: {
+          ...state.todos,
+          [todo.id]: todo,
+        },
       };
     }
     case "todos/todoToggled": {
+      const todoId = action.payload;
+      const todo = state.todos[todoId];
       return {
         ...state,
-        todos: state.todos.map((todo) => {
-          if (todo.id !== action.payload) {
-            return todo;
-          }
-          return {
+        todos: {
+          ...state.todos,
+          [todoId]: {
             ...todo,
             completed: !todo.completed,
-          };
-        }),
+          },
+        },
       };
     }
     case "todos/colorSelected": {
       const { todoId, color } = action.payload;
+      const todo = state.todos[todoId];
       return {
         ...state,
-        todos: state.todos.map((todo) => {
-          if (todo.id !== todoId) {
-            return todo;
-          }
-          return {
+        todos: {
+          ...state.todos,
+          [todoId]: {
             ...todo,
             color,
-          };
-        }),
+          },
+        },
       };
     }
     case "todos/todoDeleted": {
+      const newTodos = { ...state.todos };
+      delete newTodos[action.payload];
       return {
         ...state,
-        todos: state.todos.filter((todo) => todo.id !== action.payload),
+        todos: newTodos,
       };
     }
     case "todos/allCompleted": {
+      const newTodos = { ...state.todos };
+      Object.values(newTodos).forEach((todo) => {
+        newTodos[todo.id] = {
+          ...todo,
+          completed: true,
+        };
+      });
       return {
         ...state,
-        todos: state.todos.map((todo) => ({ ...todo, completed: true })),
+        todos: newTodos,
       };
     }
     case "todos/completedCleared": {
+      const newTodos = { ...state.todos };
+      Object.values(newTodos).forEach((todo) => {
+        if (todo.completed) {
+          delete newTodos[todo.id];
+        }
+      });
       return {
         ...state,
-        todos: state.todos.filter((todo) => !todo.completed),
+        todos: newTodos,
       };
     }
     case "todos/todosLoaded": {
+      const newTodos = {};
+      action.payload.forEach((todo) => {
+        newTodos[todo.id] = todo;
+      });
       return {
         ...state,
         status: "idle",
-        todos: action.payload,
+        todos: newTodos,
       };
     }
     case "todos/todosLoading": {
