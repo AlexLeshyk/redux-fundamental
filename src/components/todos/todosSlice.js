@@ -1,7 +1,7 @@
 import { createSelector } from "reselect";
 import { StatusFilters } from "../filters/filtersSlice";
 import { client } from "../../api/client";
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   status: "idle",
@@ -91,17 +91,24 @@ const todosSlice = createSlice({
         }
       });
     },
-    todosLoading(state) {
-      state.status = "loading";
-    },
-    todosLoaded(state, action) {
-      const newTodos = {};
-      action.payload.forEach((todo) => {
-        newTodos[todo.id] = todo;
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchTodos.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchTodos.fulfilled, (state, action) => {
+        const newTodos = {};
+        action.payload.forEach((todo) => {
+          newTodos[todo.id] = todo;
+        });
+        state.todos = newTodos;
+        state.status = "idle";
+      })
+      .addCase(saveNewTodo.fulfilled, (state, action) => {
+        const todo = action.payload;
+        state.todos[todo.id] = todo;
       });
-      state.todos = newTodos;
-      state.status = "idle";
-    },
   },
 });
 
@@ -112,24 +119,33 @@ export const {
   colorSelected,
   completedCleared,
   allCompleted,
-  todosLoading,
-  todosLoaded,
 } = todosSlice.actions;
 
 export default todosSlice.reducer;
 
-export function fetchTodos() {
-  return async (dispatch, getState) => {
-    dispatch(todosLoading());
-    const response = await client.get("/fakeApi/todos");
-    dispatch(todosLoaded(response.todos));
-  };
-}
+export const fetchTodos = createAsyncThunk("todos/fetchTodos", async () => {
+  const response = await client.get("/fakeApi/todos");
+  return response.todos;
+});
 
-export const saveNewTodo = (text) => {
-  return async (dispatch, getState) => {
-    const todo = { text };
-    const response = await client.post("/fakeApi/todos", { todo });
-    dispatch(todoAdded(response.todo));
-  };
-};
+export const saveNewTodo = createAsyncThunk("todos/saveNewTodo", async (text) => {
+  const initialTodo = { text };
+  const response = await client.post("/fakeApi/todos", { todo: initialTodo });
+  return response.todo;
+});
+
+// export function fetchTodos() {
+//   return async (dispatch, getState) => {
+//     dispatch(todosLoading());
+//     const response = await client.get("/fakeApi/todos");
+//     dispatch(todosLoaded(response.todos));
+//   };
+// }
+
+// export const saveNewTodo = (text) => {
+//   return async (dispatch, getState) => {
+//     const todo = { text };
+//     const response = await client.post("/fakeApi/todos", { todo });
+//     dispatch(todoAdded(response.todo));
+//   };
+// };
