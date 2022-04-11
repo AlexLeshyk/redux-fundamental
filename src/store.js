@@ -1,13 +1,13 @@
-import { createStore, applyMiddleware } from "redux";
-import { composeWithDevTools } from "redux-devtools-extension";
-import thunkMiddleware from "redux-thunk";
-import rootReducer from "./reducer";
-import { delayedMessageMiddleware, print1, print2, print3 } from "./exampleAddons/middleware";
+import { configureStore } from "@reduxjs/toolkit";
+import todosReducer from "./components/todos/todosSlice";
+import filtersReducer from "./components/filters/filtersSlice";
 
-const middlewareEnhancer = composeWithDevTools(applyMiddleware(thunkMiddleware));
-
-// const composedEnhancer = compose(sayHiOnDispatch, includeMeaningOfLife);
-
-const store = createStore(rootReducer, middlewareEnhancer);
+const store = configureStore({
+  reducer: {
+    // Define a top-level state field named `todos`, handled by `todosReducer`
+    todos: todosReducer,
+    filters: filtersReducer,
+  },
+});
 
 export default store;
